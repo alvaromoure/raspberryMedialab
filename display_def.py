@@ -9,7 +9,6 @@ def main():
     BLACK = 0,0,0
     WHITE = 255,255,255
     RED = 255,0,0
-    
     monitor_size = [pygame.display.Info().current_w,pygame.display.Info().current_h]
     screen = pygame.display.set_mode(monitor_size,RESIZABLE)
     fullscreen = False
@@ -18,10 +17,12 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+                pygame.quit()
             if event.type == VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w,event.h),RESIZABLE)
             if event.type == KEYDOWN:
                 if event.key == pygame.K_LEFT:
+                    running = False
                     pygame.quit()
                 if event.key == pygame.K_RIGHT:
                     dibujar_display(self)
