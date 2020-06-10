@@ -1,7 +1,24 @@
 import pygame
 import math
+import RPi.GPIO as GPIO
+import numpy
+import time
+import base64
 from pygame.locals import *
 from pygame.draw import *
+from RF24 import *
+
+
+radio = RF24(22,0)
+#pipes = [0xF0F0F0F0E1, 0xF0F0F0F0D2]
+pipes = bytearray([11,22,33,44,55,66])
+radio.begin();
+radio.openReadingPipe(1, pipes);
+radio.setDataRate(RF24_250KBPS);
+radio.setPALevel(RF24_PA_LOW);
+radio.printDetails()
+radio.startListening();
+
 BLACK = 0,0,0
 WHITE = 255,255,255
 RED = 255,0,0
@@ -56,12 +73,29 @@ def logica_trafico(velocidad_viento,lluvia):
         else:
             return 0
         
-        
+def leer_transmisor():
+    recibido = False
+    while(not recibido):
+        if radio.available():
+            message=radio.read(32)
+            recibido = True
+            return(message.decode('utf-8','backslashreplace'))   
 
-v = logica_trafico(20,False)
+def decodificar_datos(datos):
+    return (str(datos).split("#"))
+    
+    
+#
+array_datos = decodificar_datos(leer_transmisor)
+dir_viento_anemometro = array_datos[0]
+v_viento_anemometro = array_datos[1]
+cantidad_lluvia = array_datos[2]
+
+v = logica_trafico(v_viento_anemometro,False)
 signal = displaySignal(v)
 signal.draw(screen)
 input()
 pygame.quit()
-        
+datos = leer_transmisor()
+print(datos)
         
