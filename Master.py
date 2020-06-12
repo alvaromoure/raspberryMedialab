@@ -82,7 +82,8 @@ def leer_transmisor():
             return(message.decode('utf-8','backslashreplace'))   
 
 def decodificar_datos(datos):
-    return (str(datos).split("#"))
+    l = str(datos).split("#")
+    return l
     
     
 #
