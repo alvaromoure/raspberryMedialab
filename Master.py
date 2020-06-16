@@ -1,3 +1,4 @@
+import threading
 import pygame
 import math
 import RPi.GPIO as GPIO
@@ -19,13 +20,16 @@ radio.setPALevel(RF24_PA_LOW);
 radio.printDetails()
 radio.startListening();
 
-pygame.init()
-pygame.display.set_caption("minimal program")
+
 BLACK = 0,0,0
 WHITE = 255,255,255
 RED = 255,0,0
 YELLOW = 255,254,84
 ROTACION_PANTALLA = 90
+PERIODO_ACTUALIZACION = 5
+
+pygame.init()
+pygame.display.set_caption("minimal program")
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
@@ -159,13 +163,27 @@ def decodificar_datos(datos):
     return l
     
     
-#
-array_datos = decodificar_datos(leer_transmisor)
-dir_viento_anemometro = array_datos[0]
-v_viento_anemometro = array_datos[1]
-cantidad_lluvia = array_datos[2]
+def actualizar_display(array_datos):
+    dir_viento_anemometro = array_datos[0]
+    v_viento_anemometro = array_datos[1]
+    cantidad_lluvia = array_datos[2]
+    
 
-v = logica_trafico(v_viento_anemometro,False)
+
+
+
+first_time = time.time()
 while true:
+    second_time = time.time()
+    if(second_time-first_time >= PERIODO_ACTUALIZACION):
+        actualizar_display(array_datos)
+    array_datos = decodificar_datos(leer_transmisor())
+    
+    
+    
+    
+    
+    
+    
      
         
