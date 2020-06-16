@@ -17,6 +17,8 @@ pygame.display.set_caption("minimal program")
 BLACK = 0,0,0
 WHITE = 255,255,255
 RED = 255,0,0
+YELLOW = 255,254,84
+ROTACION_PANTALLA = 90
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
@@ -26,27 +28,46 @@ arrow_surface = pygame.Surface((int(monitor_width/2),monitor_height),pygame.SRCA
 fullscreen = False
 running = True
 rad = math.pi/180
-circle_offset = int(monitor_width/4)
-arrow_start = [int(monitor_width/2),int(monitor_height/2)]
-arrow_end = [int(monitor_width-monitor_width/3.5),int(monitor_height/2)]
-longitud_flecha = math.sqrt(math.pow((arrow_end[0]-arrow_start[0]),2) + math.pow((arrow_end[1]-arrow_start[1]),2)) 
-centro_flecha = [int((arrow_end[0]+arrow_start[0])/2),int((arrow_end[1]+arrow_start [1])/2)]
+centro_circulo = [int(monitor_width-monitor_width/2),int(monitor_height/2)]
+# arrow_start = [int(monitor_width/2),int(monitor_height/2)]
+# arrow_end = [int(monitor_width-monitor_width/3.5),int(monitor_height/2)]
+# longitud_flecha = math.sqrt(math.pow((arrow_end[0]-arrow_start[0]),2) + math.pow((arrow_end[1]-arrow_start[1]),2)) 
+# centro_flecha = [int((arrow_end[0]+arrow_start[0])/2),int((arrow_end[1]+arrow_start [1])/2)]
 
-aviso_centro = [int(monitor_width-monitor_width/6),int(monitor_height/2)]
+centro_cono = (int(monitor_width/8),int(monitor_height/2))
+aviso1_centro = [int(monitor_width-monitor_width/6),int(monitor_height/2)]
+aviso2_centro = [int(monitor_width-monitor_width/11),int(monitor_height/2)]
 aviso_font_size = 120
+velocidad_viento_centro = [int(monitor_width/2),int(monitor_height/2)]
 
+def clean_screen(screen):
+    screen.fill(BLACK)
 
-        
+def draw_cono(screen):
+    cono = pygame.image.load("Cono.png")
+    cono_escalado = pygame.transform.scale(cono,(int(monitor_width/2),int(monitor_height/3)))
+    cono_rotado = pygame.transform.rotate(cono_escalado,ROTACION_PANTALLA)
+    cono_rect = cono_rotado.get_rect(center = centro_cono)
+    screen.blit(cono_rotado,cono_rect)
+    font_size = 180
+    myfont = pygame.font.SysFont("Transport",font_size)
+    aviso1 = myfont.render("PRECAUCION",1,WHITE)
+    aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
+    aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
+    screen.blit(aviso1_rotado,aviso1_rect)
+    
+    aviso2 = myfont.render("VIENTO",1,WHITE)
+    aviso2_rotado = pygame.transform.rotate(aviso2,ROTACION_PANTALLA)
+    aviso2_rect = aviso2_rotado.get_rect(center=aviso2_centro)
+    screen.blit(aviso2_rotado,aviso2_rect)
+    pygame.display.update()
         
 def draw_velocidad(screen,velocidad):
-    screen.fill(BLACK)
     if (velocidad!=0):
-        cx = int(screen.get_width()/2)
-        cy = int(screen.get_height()/2)
         font_size = 480
-        circle_size = 380
+        circle_size = 400
         circle_width = 30
-        circulo = circle(screen,RED,(cx-circle_offset,cy),circle_size,circle_width)
+        circulo = circle(screen,RED,centro_circulo,circle_size,circle_width)
         myfont = pygame.font.SysFont("Transport",font_size)
         velocidad = myfont.render(str(velocidad),1,WHITE)
         velocidad_rotada = pygame.transform.rotate(velocidad,90)
@@ -56,12 +77,25 @@ def draw_velocidad(screen,velocidad):
 
 def draw_rosa_viento(screen,direccion,velocidad = 0):
     screen.fill(BLACK)
+    draw_cono(screen)
     imagen = pygame.image.load(direccion)
     imagen_escalada = pygame.transform.scale(imagen,(int(monitor_width/1.7),int(monitor_height)))
     imagen_rotada = pygame.transform.rotate(imagen_escalada,90)
-    imagen_rect = imagen_rotada.get_rect(center=centro_flecha)
+    imagen_rect = imagen_rotada.get_rect(center=centro_circulo)
     screen.blit(imagen_rotada,imagen_rect)
+    
+#     rosa_font_size = 150
+#     rosa_font = pygame.font.SysFont("Transport",rosa_font_size)
+#     velocidad_viento = rosa_font.render("50",1,YELLOW)
+#     velocidad_viento_rotada = pygame.transform.rotate(velocidad_viento,ROTACION_PANTALLA)
+#     velocidad_viento_rect = velocidad_viento_rotada.get_rect(center=velocidad_viento_centro)
+#     screen.blit(velocidad_viento_rotada,velocidad_viento_rect)
+#     pygame.display.update()
     pygame.display.update()
+
+def draw_all(screen,velocidad,direccion):
+    draw_velocidad(screen,velocidad)
+    draw_rosa_viento(screen,direccion)
 
 def arrow(screen, lcolor, tricolor, start, end, trirad, thickness=20):
     pygame.draw.line(screen, lcolor, start, end, thickness)
@@ -106,13 +140,10 @@ def wait():
                 return
                 
 v = logica_trafico(20,False)
+draw_cono(screen)
 draw_velocidad(screen,v)
 wait()
-draw_rosa_viento(screen,"N.png")
-wait()
-
-v = logica_trafico(25,False)
-draw_velocidad(screen,v)
+draw_rosa_viento(screen,"SW.png")
 wait()
 pygame.quit()
     
