@@ -16,7 +16,7 @@ pipes = bytearray([11,22,33,44,55,66])
 radio.begin();
 radio.openReadingPipe(1, pipes);
 radio.setDataRate(RF24_250KBPS);
-radio.setPALevel(RF24_PA_LOW);
+radio.setPALevel(RF24_PA_HIGH);
 radio.printDetails()
 radio.startListening();
 
@@ -27,6 +27,12 @@ RED = 255,0,0
 YELLOW = 255,254,84
 ROTACION_PANTALLA = 90
 PERIODO_ACTUALIZACION = 5
+PERIODO_PARPADEO = 5
+VELOCIDAD = 0
+VELOCIDAD_VIENTO = ""
+DIRECCION_VIENTO = ""
+CANTIDAD_LLUVIA =""
+rosa_dibujada = True
 
 pygame.init()
 pygame.display.set_caption("minimal program")
@@ -87,6 +93,7 @@ def draw_velocidad(screen,velocidad):
     pygame.display.update()
 
 def draw_rosa_viento(screen,direccion,velocidad = 0):
+    direccion =direccion + ".png"
     screen.fill(BLACK)
     draw_cono(screen)
     imagen = pygame.image.load(direccion)
@@ -151,34 +158,63 @@ def wait():
                 return
             
 def leer_transmisor():
-    recibido = False
-    while(not recibido):
-        if radio.available():
-            message=radio.read(32)
-            recibido = True
-            return(message.decode('utf-8','backslashreplace'))   
+    if radio.available():
+        message=radio.read(32)
+        return(message.decode('utf-8','backslashreplace'))   
 
 def decodificar_datos(datos):
+    if (datos is None):
+        return [0]
     l = str(datos).split("#")
+    print (datos)
     return l
     
     
-def actualizar_display(array_datos):
-    dir_viento_anemometro = array_datos[0]
-    v_viento_anemometro = array_datos[1]
-    cantidad_lluvia = array_datos[2]
+def actualizar_variables(array_datos):
+    global DIRECCION_VIENTO
+    global VELOCIDAD_VIENTO
+    global CANTIDAD_LLUVIA
+    global VELOCIDAD
+    
+    DIRECCION_VIENTO = array_datos[0]
+    VELOCIDAD_VIENTO = array_datos[1]
+    CANTIDAD_LLUVIA = array_datos[2]
+    VELOCIDAD = logica_trafico(float(VELOCIDAD_VIENTO),False)
+    
+def parpadeo_display():
+    global rosa_dibujada
+    clean_screen(screen)
+    draw_cono(screen)
+    if (rosa_dibujada):
+        draw_velocidad(screen,VELOCIDAD)
+        rosa_dibujada = False
+    elif(not rosa_dibujada):
+        draw_rosa_viento(screen,DIRECCION_VIENTO)
+        rosa_dibujada = True
     
 
-
-
-
-first_time = time.time()
-while true:
-    second_time = time.time()
-    if(second_time-first_time >= PERIODO_ACTUALIZACION):
-        actualizar_display(array_datos)
+primer_temporizador_actualizacion = time.time()
+primer_temporizador_parpadeo = time.time()
+primera_vez = True
+while True:
+    segundo_temporizador_actualizacion = time.time()
     array_datos = decodificar_datos(leer_transmisor())
-    
+    if(segundo_temporizador_actualizacion - primer_temporizador_actualizacion >= PERIODO_ACTUALIZACION or primera_vez):
+        if(len(array_datos)>2):
+            actualizar_variables(array_datos)
+            primer_temporizador_actualizacion = segundo_temporizador_actualizacion
+            primera_vez = False
+            
+    segundo_temporizador_parpadeo = time.time()
+    if(segundo_temporizador_parpadeo - primer_temporizador_parpadeo >= PERIODO_PARPADEO):
+        if(not primera_vez):
+            parpadeo_display()
+            primer_temporizador_parpadeo = segundo_temporizador_parpadeo
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            exit()
+        
     
     
     
