@@ -13,6 +13,9 @@ RED = 255,0,0
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
+
+monitor_center = [int(monitor_width/2),int(monitor_height/2)]
+
 screen = pygame.display.set_mode(monitor_size,RESIZABLE)
 
 arrow_surface = pygame.Surface((int(monitor_width/2),monitor_height),pygame.SRCALPHA)
@@ -75,7 +78,14 @@ def arrow(screen, lcolor, tricolor, start, end, trirad, thickness=20):
                                         end[1] + trirad * math.cos(rotation - 120*rad)),
                                        (end[0] + trirad * math.sin(rotation + 120*rad),
                                         end[1] + trirad * math.cos(rotation + 120*rad))))
+p1 = [int(monitor_width/3),int(monitor_height/2)]
+p2 = [int(monitor_width-monitor_width/3),int(monitor_height/5)]
+p3 = [int(monitor_width-monitor_width/3),int(monitor_height-monitor_height/5)]
 
+
+
+    
+    
     
     
     
@@ -111,14 +121,8 @@ def wait():
             if event.type == KEYDOWN:
                 return
                 
-v = logica_trafico(20,False)
-signal = displaySignal(v,"N")
-signal.draw(screen)
-wait()
-
-v = logica_trafico(25,False)
-newSignal = displaySignal(v,"E")
-newSignal.draw(screen)
+draw_peligro(screen)
+pygame.display.update()
 wait()
 pygame.quit()
     

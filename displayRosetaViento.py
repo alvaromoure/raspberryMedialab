@@ -22,7 +22,7 @@ ROTACION_PANTALLA = 90
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
-screen = pygame.display.set_mode(monitor_size,FULLSCREEN)
+screen = pygame.display.set_mode(monitor_size,RESIZABLE)
 
 arrow_surface = pygame.Surface((int(monitor_width/2),monitor_height),pygame.SRCALPHA)
 fullscreen = False
@@ -93,6 +93,12 @@ def draw_rosa_viento(screen,direccion,velocidad = 0):
 #     pygame.display.update()
     pygame.display.update()
 
+
+
+    
+    
+    
+
 def draw_all(screen,velocidad,direccion):
     draw_velocidad(screen,velocidad)
     draw_rosa_viento(screen,direccion)
@@ -138,12 +144,10 @@ def wait():
                 sys.exit()
             if event.type == KEYDOWN:
                 return
-                
-v = logica_trafico(20,False)
-draw_cono(screen)
-draw_velocidad(screen,v)
-wait()
-draw_rosa_viento(screen,"SW.png")
+
+
+draw_peligro(screen)
+
 wait()
 pygame.quit()
     

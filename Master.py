@@ -26,8 +26,11 @@ WHITE = 255,255,255
 RED = 255,0,0
 YELLOW = 255,254,84
 ROTACION_PANTALLA = 90
+
 PERIODO_ACTUALIZACION = 5
 PERIODO_PARPADEO = 5
+CODIGO_PELIGRO = 9999
+
 VELOCIDAD = 0
 VELOCIDAD_VIENTO = ""
 DIRECCION_VIENTO = ""
@@ -80,7 +83,7 @@ def draw_cono(screen):
     pygame.display.update()
         
 def draw_velocidad(screen,velocidad):
-    if (velocidad!=0):
+    if (velocidad!=0 and velocidad != CODIGO_PELIGRO):
         font_size = 480
         circle_size = 400
         circle_width = 30
@@ -90,6 +93,8 @@ def draw_velocidad(screen,velocidad):
         velocidad_rotada = pygame.transform.rotate(velocidad,90)
         velocidad_rect = velocidad_rotada.get_rect(center = circulo.center)
         screen.blit(velocidad_rotada,velocidad_rect)
+    elif(velocidad == CODIGO_PELIGRO):
+        draw_peligro(screen)
     pygame.display.update()
 
 def draw_rosa_viento(screen,direccion,velocidad = 0):
@@ -110,11 +115,14 @@ def draw_rosa_viento(screen,direccion,velocidad = 0):
 #     screen.blit(velocidad_viento_rotada,velocidad_viento_rect)
 #     pygame.display.update()
     pygame.display.update()
-
-def draw_all(screen,velocidad,direccion):
-    draw_velocidad(screen,velocidad)
-    draw_rosa_viento(screen,direccion)
-
+    
+def draw_peligro(screen):
+    peligro = pygame.image.load("peligro.png")
+    peligro_escalado = pygame.transform.scale(peligro,(int(monitor_width/2.7),int(monitor_height/1.3)))
+    peligro_rect = peligro_escalado.get_rect(center=centro_circulo)
+    screen.blit(peligro_escalado,peligro_rect)
+    pygame.display.update()
+    
 def arrow(screen, lcolor, tricolor, start, end, trirad, thickness=20):
     pygame.draw.line(screen, lcolor, start, end, thickness)
     rotation = (math.atan2(start[1] - end[1], end[0] - start[0])) + math.pi/2
@@ -197,6 +205,13 @@ primer_temporizador_actualizacion = time.time()
 primer_temporizador_parpadeo = time.time()
 primera_vez = True
 while True:
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            exit()
+        if event.type == KEYDOWN:
+            pygame.quit()
+            exit()
     segundo_temporizador_actualizacion = time.time()
     array_datos = decodificar_datos(leer_transmisor())
     if(segundo_temporizador_actualizacion - primer_temporizador_actualizacion >= PERIODO_ACTUALIZACION or primera_vez):
@@ -210,10 +225,7 @@ while True:
         if(not primera_vez):
             parpadeo_display()
             primer_temporizador_parpadeo = segundo_temporizador_parpadeo
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            pygame.quit()
-            exit()
+    
         
     
     
