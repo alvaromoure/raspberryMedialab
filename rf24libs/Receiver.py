@@ -11,7 +11,7 @@ pipes = bytearray([11,22,33,44,55,66])
 radio.begin();
 radio.openReadingPipe(1, pipes);
 radio.setDataRate(RF24_250KBPS);
-radio.setPALevel(RF24_PA_LOW);
+radio.setPALevel(RF24_PA_HIGH);
 radio.printDetails()
 radio.startListening();
 

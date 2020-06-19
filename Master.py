@@ -29,20 +29,22 @@ ROTACION_PANTALLA = 90
 
 PERIODO_ACTUALIZACION = 5
 PERIODO_PARPADEO = 5
+PERIODO_PERSISTENCIA_LLUVIA = 10
 CODIGO_PELIGRO = 9999
 
 VELOCIDAD = 0
 VELOCIDAD_VIENTO = ""
 DIRECCION_VIENTO = ""
-CANTIDAD_LLUVIA =""
+CANTIDAD_LLUVIA = "0"
 rosa_dibujada = True
+temporizador_lluvia = time.time()
 
 pygame.init()
 pygame.display.set_caption("minimal program")
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
-screen = pygame.display.set_mode(monitor_size,FULLSCREEN)
+screen = pygame.display.set_mode(monitor_size,RESIZABLE)
 
 arrow_surface = pygame.Surface((int(monitor_width/2),monitor_height),pygame.SRCALPHA)
 fullscreen = False
@@ -71,7 +73,7 @@ def draw_cono(screen):
     screen.blit(cono_rotado,cono_rect)
     font_size = 180
     myfont = pygame.font.SysFont("Transport",font_size)
-    aviso1 = myfont.render("PRECAUCION",1,WHITE)
+    aviso1 = myfont.render("PRECAUCIÓN",1,WHITE)
     aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
     aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
     screen.blit(aviso1_rotado,aviso1_rect)
@@ -176,6 +178,17 @@ def decodificar_datos(datos):
     l = str(datos).split("#")
     print (datos)
     return l
+
+def lluvia_handler(cantidadLluvia):
+    global temporizador_lluvia
+    
+    lluvia_actual = float(cantidadLluvia)
+    if(lluvia_actual > 0):
+        temporizador_lluvia = time.time()
+        return True
+    if(time.time()-temporizador_lluvia > PERIODO_PERSISTENCIA_LLUVIA):
+        return False
+    
     
     
 def actualizar_variables(array_datos):
@@ -187,7 +200,8 @@ def actualizar_variables(array_datos):
     DIRECCION_VIENTO = array_datos[0]
     VELOCIDAD_VIENTO = array_datos[1]
     CANTIDAD_LLUVIA = array_datos[2]
-    VELOCIDAD = logica_trafico(float(VELOCIDAD_VIENTO),False)
+    bool_lluvia = lluvia_handler(CANTIDAD_LLUVIA)
+    VELOCIDAD = logica_trafico(float(VELOCIDAD_VIENTO),bool_lluvia)
     
 def parpadeo_display():
     global rosa_dibujada
