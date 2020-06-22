@@ -29,14 +29,16 @@ ROTACION_PANTALLA = 90
 
 PERIODO_ACTUALIZACION = 5
 PERIODO_PARPADEO = 5
-PERIODO_PERSISTENCIA_LLUVIA = 10
+PERIODO_PERSISTENCIA_LLUVIA = 3600
 CODIGO_PELIGRO = 9999
 
 VELOCIDAD = 0
 VELOCIDAD_VIENTO = ""
 DIRECCION_VIENTO = ""
 CANTIDAD_LLUVIA = "0"
-rosa_dibujada = True
+LLUVIA = False
+
+rosa_dibujada = False
 temporizador_lluvia = time.time()
 
 pygame.init()
@@ -44,7 +46,7 @@ pygame.display.set_caption("minimal program")
 monitor_width = pygame.display.Info().current_w
 monitor_height = pygame.display.Info().current_h
 monitor_size = [monitor_width,monitor_height]
-screen = pygame.display.set_mode(monitor_size,RESIZABLE)
+screen = pygame.display.set_mode(monitor_size,FULLSCREEN)
 
 arrow_surface = pygame.Surface((int(monitor_width/2),monitor_height),pygame.SRCALPHA)
 fullscreen = False
@@ -66,22 +68,36 @@ def clean_screen(screen):
     screen.fill(BLACK)
 
 def draw_cono(screen):
+    global VELOCIDAD
     cono = pygame.image.load("Cono.png")
     cono_escalado = pygame.transform.scale(cono,(int(monitor_width/2),int(monitor_height/3)))
     cono_rotado = pygame.transform.rotate(cono_escalado,ROTACION_PANTALLA)
     cono_rect = cono_rotado.get_rect(center = centro_cono)
     screen.blit(cono_rotado,cono_rect)
-    font_size = 180
-    myfont = pygame.font.SysFont("Transport",font_size)
-    aviso1 = myfont.render("PRECAUCIÓN",1,WHITE)
-    aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
-    aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
-    screen.blit(aviso1_rotado,aviso1_rect)
-    
-    aviso2 = myfont.render("VIENTO",1,WHITE)
-    aviso2_rotado = pygame.transform.rotate(aviso2,ROTACION_PANTALLA)
-    aviso2_rect = aviso2_rotado.get_rect(center=aviso2_centro)
-    screen.blit(aviso2_rotado,aviso2_rect)
+    if (VELOCIDAD == 0 or VELOCIDAD < CODIGO_PELIGRO):
+        font_size = 180
+        myfont = pygame.font.SysFont("Transport",font_size)
+        aviso1 = myfont.render("PRECAUCIÓN",1,WHITE)
+        aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
+        aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
+        screen.blit(aviso1_rotado,aviso1_rect)
+        
+        aviso2 = myfont.render("VIENTO",1,WHITE)
+        aviso2_rotado = pygame.transform.rotate(aviso2,ROTACION_PANTALLA)
+        aviso2_rect = aviso2_rotado.get_rect(center=aviso2_centro)
+        screen.blit(aviso2_rotado,aviso2_rect)
+    if (VELOCIDAD == CODIGO_PELIGRO):
+            font_size = 180
+            myfont = pygame.font.SysFont("Transport",font_size)
+            aviso1 = myfont.render("EXTREME",1,WHITE)
+            aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
+            aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
+            screen.blit(aviso1_rotado,aviso1_rect)
+            
+            aviso2 = myfont.render("PRECAUCIÓN",1,WHITE)
+            aviso2_rotado = pygame.transform.rotate(aviso2,ROTACION_PANTALLA)
+            aviso2_rect = aviso2_rotado.get_rect(center=aviso2_centro)
+            screen.blit(aviso2_rotado,aviso2_rect) 
     pygame.display.update()
         
 def draw_velocidad(screen,velocidad):
@@ -95,8 +111,22 @@ def draw_velocidad(screen,velocidad):
         velocidad_rotada = pygame.transform.rotate(velocidad,90)
         velocidad_rect = velocidad_rotada.get_rect(center = circulo.center)
         screen.blit(velocidad_rotada,velocidad_rect)
+        
     elif(velocidad == CODIGO_PELIGRO):
         draw_peligro(screen)
+    elif(velocidad == 0):
+        font_size = 180
+        myfont = pygame.font.SysFont("Transport",font_size)
+        aviso1 = myfont.render("PRECAUCIÓN",1,WHITE)
+        aviso1_rotado = pygame.transform.rotate(aviso1,ROTACION_PANTALLA)
+        aviso1_rect = aviso1_rotado.get_rect(center=aviso1_centro)
+        screen.blit(aviso1_rotado,aviso1_rect)
+        
+        aviso2 = myfont.render("VIENTO",1,WHITE)
+        aviso2_rotado = pygame.transform.rotate(aviso2,ROTACION_PANTALLA)
+        aviso2_rect = aviso2_rotado.get_rect(center=aviso2_centro)
+        screen.blit(aviso2_rotado,aviso2_rect)
+    
     pygame.display.update()
 
 def draw_rosa_viento(screen,direccion,velocidad = 0):
@@ -181,13 +211,18 @@ def decodificar_datos(datos):
 
 def lluvia_handler(cantidadLluvia):
     global temporizador_lluvia
+    global LLUVIA
     
     lluvia_actual = float(cantidadLluvia)
     if(lluvia_actual > 0):
         temporizador_lluvia = time.time()
+        LLUVIA = True
         return True
     if(time.time()-temporizador_lluvia > PERIODO_PERSISTENCIA_LLUVIA):
+        LLUVIA = False
         return False
+    if (LLUVIA and (time.time()-temporizador_lluvia < PERIODO_PERSISTENCIA_LLUVIA)):
+        return True
     
     
     
@@ -205,12 +240,15 @@ def actualizar_variables(array_datos):
     
 def parpadeo_display():
     global rosa_dibujada
-    clean_screen(screen)
-    draw_cono(screen)
-    if (rosa_dibujada):
+
+    if (rosa_dibujada and VELOCIDAD != 0):
+        clean_screen(screen)
+        draw_cono(screen)
         draw_velocidad(screen,VELOCIDAD)
         rosa_dibujada = False
     elif(not rosa_dibujada):
+        clean_screen(screen)
+        draw_cono(screen)
         draw_rosa_viento(screen,DIRECCION_VIENTO)
         rosa_dibujada = True
     
